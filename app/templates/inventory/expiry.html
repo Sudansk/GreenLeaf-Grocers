@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block title %}Expiry Alerts - GreenLeaf Grocers{% endblock %}
+{% block page_title %}Product Expiry & Perishables Monitor{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h6 class="text-muted mb-0">Products expiring within the next 15 days or already past their expiration date.</h6>
+  </div>
+  <a href="{{ url_for('reports.expiry_csv') }}" class="btn btn-outline-danger">
+    <i class="bi bi-file-earmark-arrow-down me-1"></i> Export Expiry CSV
+  </a>
+</div>
+
+<div class="card shadow-sm">
+  <div class="card-header-clean">
+    <div class="d-flex align-items-center gap-2">
+      <i class="bi bi-calendar-x-fill text-danger fs-5"></i>
+      <h6 class="mb-0 fw-bold">At-Risk Batches ({{ items | length }})</h6>
+    </div>
+    <span class="badge bg-danger-subtle text-danger border border-danger-subtle">Critical Action Required</span>
+  </div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light text-secondary small text-uppercase">
+          <tr>
+            <th class="ps-4">Product Name</th>
+            <th>SKU</th>
+            <th>Category</th>
+            <th>Available Qty</th>
+            <th>Expiry Date</th>
+            <th>Days Remaining</th>
+            <th>Status</th>
+            <th>Supplier</th>
+            <th class="text-end pe-4">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% if items %}
+            {% for item in items %}
+            <tr>
+              <td class="ps-4 fw-bold text-dark">{{ item.name }}</td>
+              <td><span class="badge bg-light text-secondary border font-monospace">{{ item.sku }}</span></td>
+              <td><span class="badge bg-light text-dark border">{{ item.category }}</span></td>
+              <td class="fw-semibold">{{ item.quantity }} {{ item.unit }}</td>
+              <td class="fw-bold">{{ item.expiry_date }}</td>
+              <td>
+                {% if item.days_left < 0 %}
+                  <span class="badge badge-exp-expired">{{ -item.days_left }} days past due</span>
+                {% elif item.days_left == 0 %}
+                  <span class="badge badge-exp-expired">Expires Today!</span>
+                {% else %}
+                  <span class="badge badge-exp-soon">{{ item.days_left }} days left</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if item.days_left < 0 %}
+                  <span class="badge bg-danger text-white">Expired</span>
+                {% else %}
+                  <span class="badge bg-warning text-dark">Expiring Soon</span>
+                {% endif %}
+              </td>
+              <td class="text-muted small">{{ item.supplier_name or 'N/A' }}</td>
+              <td class="text-end pe-4">
+                <a href="{{ url_for('products.detail', product_id=item.id) }}" class="btn btn-sm btn-outline-danger">
+                  <i class="bi bi-trash3 me-1"></i> Discard / Adjust
+                </a>
+              </td>
+            </tr>
+            {% endfor %}
+          {% else %}
+            <tr>
+              <td colspan="9" class="text-center py-5 text-muted">
+                <i class="bi bi-shield-check text-success fs-2 d-block mb-2"></i>
+                No items are currently expiring within 15 days or past due. All fresh!
+              </td>
+            </tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+
+{% block title %}Reports & Analytics Hub - GreenLeaf Grocers{% endblock %}
+{% block page_title %}Reports & Business Intelligence Hub{% endblock %}
+
+{% block content %}
+<div class="row g-4 mb-4">
+  <!-- Daily Sales Card -->
+  <div class="col-md-6 col-xl-4">
+    <div class="card shadow-sm h-100">
+      <div class="card-body p-4 d-flex flex-column justify-content-between">
+        <div>
+          <div class="d-flex align-items-center gap-2 mb-2 text-success">
+            <i class="bi bi-calendar-check fs-4"></i>
+            <h5 class="fw-bold mb-0">Daily Sales Report</h5>
+          </div>
+          <p class="text-muted small">Comprehensive breakdown of today's invoices, item volumes, discounts, and cashier performance.</p>
+          <div class="p-3 bg-light rounded-3 mb-3">
+            <div class="d-flex justify-content-between small text-muted mb-1">
+              <span>Today's Transactions:</span>
+              <strong class="text-dark">{{ daily.summary.total_sales }}</strong>
+            </div>
+            <div class="d-flex justify-content-between small text-muted">
+              <span>Today's Revenue:</span>
+              <strong class="text-success">${{ "%.2f"|format(daily.summary.total_revenue) }}</strong>
+            </div>
+          </div>
+        </div>
+        <div class="d-flex gap-2">
+          <a href="{{ url_for('reports.daily') }}" class="btn btn-gl-primary btn-sm flex-grow-1">View Report</a>
+          <a href="{{ url_for('reports.daily_csv', date=today) }}" class="btn btn-outline-success btn-sm"><i class="bi bi-download"></i> CSV</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Monthly Sales Card -->
+  <div class="col-md-6 col-xl-4">
+    <div class="card shadow-sm h-100">
+      <div class="card-body p-4 d-flex flex-column justify-content-between">
+        <div>
+          <div class="d-flex align-items-center gap-2 mb-2 text-primary">
+            <i class="bi bi-calendar-month fs-4"></i>
+            <h5 class="fw-bold mb-0">Monthly Sales Report</h5>
+          </div>
+          <p class="text-muted small">Month-to-date sales aggregate with day-by-day revenue trends, transaction volume, and average bill metrics.</p>
+          <div class="p-3 bg-light rounded-3 mb-3">
+            <div class="d-flex justify-content-between small text-muted mb-1">
+              <span>Month Transactions:</span>
+              <strong class="text-dark">{{ monthly.summary.total_transactions }}</strong>
+            </div>
+            <div class="d-flex justify-content-between small text-muted">
+              <span>Month Revenue:</span>
+              <strong class="text-primary">${{ "%.2f"|format(monthly.summary.total_revenue) }}</strong>
+            </div>
+          </div>
+        </div>
+        <div class="d-flex gap-2">
+          <a href="{{ url_for('reports.monthly') }}" class="btn btn-primary btn-sm flex-grow-1">View Report</a>
+          <a href="{{ url_for('reports.monthly_csv', month=this_month) }}" class="btn btn-outline-primary btn-sm"><i class="bi bi-download"></i> CSV</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Product Performance & Profitability Card -->
+  <div class="col-md-6 col-xl-4">
+    <div class="card shadow-sm h-100">
+      <div class="card-body p-4 d-flex flex-column justify-content-between">
+        <div>
+          <div class="d-flex align-items-center gap-2 mb-2 text-info">
+            <i class="bi bi-bar-chart-line fs-4"></i>
+            <h5 class="fw-bold mb-0">Product Profitability</h5>
+          </div>
+          <p class="text-muted small">Analyze unit velocities, total revenue, Cost of Goods Sold (COGS), gross profits, and profit margins per SKU.</p>
+          <div class="p-3 bg-light rounded-3 mb-3 text-muted small">
+            <div><i class="bi bi-check2 text-success me-1"></i> Cost vs Selling analysis</div>
+            <div><i class="bi bi-check2 text-success me-1"></i> Margin % and revenue rank</div>
+          </div>
+        </div>
+        <div class="d-flex gap-2">
+          <a href="{{ url_for('reports.product_performance') }}" class="btn btn-outline-secondary btn-sm flex-grow-1">View Analysis</a>
+          <a href="{{ url_for('reports.product_performance_csv') }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-download"></i> CSV</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Low Stock Card -->
+  <div class="col-md-6 col-xl-6">
+    <div class="card shadow-sm h-100">
+      <div class="card-body p-4 d-flex flex-column justify-content-between">
+        <div>
+          <div class="d-flex align-items-center gap-2 mb-2 text-warning">
+            <i class="bi bi-exclamation-triangle fs-4"></i>
+            <h5 class="fw-bold mb-0">Low Stock Reorder Report</h5>
+          </div>
+          <p class="text-muted small">Instant list of items requiring immediate purchase orders, including deficit quantities, estimated restocking cost, and supplier contact details.</p>
+          <div class="p-3 bg-light rounded-3 mb-3">
+            <span class="badge bg-warning text-dark fw-bold me-2">{{ low_stock_count }} items</span> requiring reorder
+          </div>
+        </div>
+        <div class="d-flex gap-2">
+          <a href="{{ url_for('reports.low_stock') }}" class="btn btn-outline-warning btn-sm flex-grow-1 text-dark">Open Reorder Sheet</a>
+          <a href="{{ url_for('reports.low_stock_csv') }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-download"></i> CSV</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Expiry Card -->
+  <div class="col-md-6 col-xl-6">
+    <div class="card shadow-sm h-100">
+      <div class="card-body p-4 d-flex flex-column justify-content-between">
+        <div>
+          <div class="d-flex align-items-center gap-2 mb-2 text-danger">
+            <i class="bi bi-calendar-x fs-4"></i>
+            <h5 class="fw-bold mb-0">Perishables & Expiry Report</h5>
+          </div>
+          <p class="text-muted small">Quality assurance audit of inventory expiring within 15 days or past expiry. Track tied-up capital and prevent selling expired items.</p>
+          <div class="p-3 bg-light rounded-3 mb-3">
+            <span class="badge bg-danger fw-bold me-2">{{ expiry_count }} items</span> at risk / expired
+          </div>
+        </div>
+        <div class="d-flex gap-2">
+          <a href="{{ url_for('reports.expiry') }}" class="btn btn-outline-danger btn-sm flex-grow-1">Open Expiry Report</a>
+          <a href="{{ url_for('reports.expiry_csv') }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-download"></i> CSV</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

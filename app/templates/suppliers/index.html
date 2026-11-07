@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+
+{% block title %}Supplier Management - GreenLeaf Grocers{% endblock %}
+{% block page_title %}Supplier Directory{% endblock %}
+
+{% block content %}
+<div class="card shadow-sm mb-4">
+  <div class="card-body p-3">
+    <div class="d-flex justify-content-between align-items-center gap-3">
+      <form method="GET" action="{{ url_for('suppliers.index') }}" class="d-flex gap-2 flex-grow-1" style="max-width: 450px;">
+        <div class="input-group">
+          <span class="input-group-text bg-light text-muted"><i class="bi bi-search"></i></span>
+          <input type="text" name="search" class="form-control" placeholder="Search supplier by name, email, phone..." value="{{ search or '' }}">
+        </div>
+        <button type="submit" class="btn btn-gl-primary">Search</button>
+        {% if search %}
+        <a href="{{ url_for('suppliers.index') }}" class="btn btn-outline-secondary"><i class="bi bi-x-circle"></i></a>
+        {% endif %}
+      </form>
+
+      <button type="button" class="btn btn-gl-primary" data-bs-toggle="modal" data-bs-target="#addSupplierModal">
+        <i class="bi bi-plus-circle me-1"></i> Add Supplier
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="card shadow-sm">
+  <div class="card-header-clean">
+    <div class="d-flex align-items-center gap-2">
+      <i class="bi bi-truck text-success fs-5"></i>
+      <h6 class="mb-0 fw-bold">Active Suppliers ({{ suppliers | length }})</h6>
+    </div>
+  </div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light text-secondary small text-uppercase">
+          <tr>
+            <th class="ps-4">Supplier Name</th>
+            <th>Contact Person</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>Address</th>
+            <th>Products Supplied</th>
+            <th class="text-end pe-4">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% if suppliers %}
+            {% for s in suppliers %}
+            <tr>
+              <td class="ps-4 fw-bold text-dark">{{ s.name }}</td>
+              <td>{{ s.contact_person or 'N/A' }}</td>
+              <td>
+                {% if s.email %}
+                <a href="mailto:{{ s.email }}" class="text-decoration-none">{{ s.email }}</a>
+                {% else %}
+                <span class="text-muted">N/A</span>
+                {% endif %}
+              </td>
+              <td>{{ s.phone or 'N/A' }}</td>
+              <td class="text-muted small text-truncate" style="max-width: 180px;" title="{{ s.address }}">{{ s.address or 'N/A' }}</td>
+              <td><span class="badge bg-success-subtle text-success fw-bold">{{ s.product_count }} items</span></td>
+              <td class="text-end pe-4">
+                <div class="btn-group btn-group-sm">
+                  <!-- Edit Modal Trigger -->
+                  <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editModal{{ s.id }}">
+                    <i class="bi bi-pencil"></i>
+                  </button>
+                  <form method="POST" action="{{ url_for('suppliers.delete', supplier_id=s.id) }}" style="display:inline;" onsubmit="return confirm('Delete this supplier? Associated products will have their supplier set to none.');">
+                    <button type="submit" class="btn btn-outline-danger">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </form>
+                </div>
+
+                <!-- Edit Supplier Modal -->
+                <div class="modal fade" id="editModal{{ s.id }}" tabindex="-1" aria-hidden="true">
+                  <div class="modal-dialog text-start">
+                    <div class="modal-content">
+                      <form method="POST" action="{{ url_for('suppliers.edit', supplier_id=s.id) }}">
+                        <div class="modal-header">
+                          <h5 class="modal-title fw-bold">Edit Supplier</h5>
+                          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                          <div class="mb-3">
+                            <label class="form-label small fw-semibold">Supplier Name *</label>
+                            <input type="text" name="name" class="form-control" value="{{ s.name }}" required>
+                          </div>
+                          <div class="mb-3">
+                            <label class="form-label small fw-semibold">Contact Person</label>
+                            <input type="text" name="contact_person" class="form-control" value="{{ s.contact_person or '' }}">
+                          </div>
+                          <div class="mb-3">
+                            <label class="form-label small fw-semibold">Email Address</label>
+                            <input type="email" name="email" class="form-control" value="{{ s.email or '' }}">
+                          </div>
+                          <div class="mb-3">
+                            <label class="form-label small fw-semibold">Phone Number</label>
+                            <input type="text" name="phone" class="form-control" value="{{ s.phone or '' }}">
+                          </div>
+                          <div class="mb-3">
+                            <label class="form-label small fw-semibold">Physical Address</label>
+                            <textarea name="address" class="form-control" rows="2">{{ s.address or '' }}</textarea>
+                          </div>
+                        </div>
+                        <div class="modal-footer">
+                          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                          <button type="submit" class="btn btn-gl-primary">Update Supplier</button>
+                        </div>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          {% else %}
+            <tr>
+              <td colspan="7" class="text-center py-5 text-muted">No suppliers found.</td>
+            </tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Add Supplier Modal -->
+<div class="modal fade" id="addSupplierModal" tabindex="-1">
+  <div class="modal-dialog text-start">
+    <div class="modal-content">
+      <form method="POST" action="{{ url_for('suppliers.create') }}">
+        <div class="modal-header">
+          <h5 class="modal-title fw-bold">Add New Supplier</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Supplier / Company Name *</label>
+            <input type="text" name="name" class="form-control" placeholder="e.g. Green Harvest Distributors" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Contact Person</label>
+            <input type="text" name="contact_person" class="form-control" placeholder="e.g. Jane Doe">
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Email Address</label>
+            <input type="email" name="email" class="form-control" placeholder="e.g. orders@supplier.com">
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Phone Number</label>
+            <input type="text" name="phone" class="form-control" placeholder="e.g. +1-555-0199">
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Physical Address</label>
+            <textarea name="address" class="form-control" rows="2" placeholder="Warehouse address, City, State"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-gl-primary">Save Supplier</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

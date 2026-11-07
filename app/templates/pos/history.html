@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}Sales History - GreenLeaf Grocers{% endblock %}
+{% block page_title %}Sales & Billing History{% endblock %}
+
+{% block content %}
+<div class="card shadow-sm">
+  <div class="card-header-clean">
+    <div class="d-flex align-items-center gap-2">
+      <i class="bi bi-clock-history text-success fs-5"></i>
+      <h6 class="mb-0 fw-bold">Recent Completed Transactions</h6>
+    </div>
+    <a href="{{ url_for('pos.index') }}" class="btn btn-sm btn-gl-primary">
+      <i class="bi bi-cart-plus me-1"></i> New Sale
+    </a>
+  </div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light text-secondary small text-uppercase">
+          <tr>
+            <th class="ps-4">Invoice #</th>
+            <th>Date & Time</th>
+            <th>Customer</th>
+            <th>Items</th>
+            <th>Payment</th>
+            <th>Cashier</th>
+            <th>Subtotal</th>
+            <th>Grand Total</th>
+            <th class="text-end pe-4">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% if sales %}
+            {% for s in sales %}
+            <tr>
+              <td class="ps-4">
+                <span class="badge bg-light text-dark border font-monospace fw-semibold">{{ s.invoice_number }}</span>
+              </td>
+              <td>{{ s.created_at | dateformat('%b %d, %Y %I:%M %p') }}</td>
+              <td class="fw-semibold">{{ s.customer_name }}</td>
+              <td><span class="badge bg-secondary-subtle text-secondary">{{ s.item_count }} items</span></td>
+              <td><span class="badge bg-light text-dark border">{{ s.payment_method }}</span></td>
+              <td>{{ s.cashier_name or 'N/A' }}</td>
+              <td>${{ "%.2f"|format(s.subtotal) }}</td>
+              <td><strong class="text-success">${{ "%.2f"|format(s.grand_total) }}</strong></td>
+              <td class="text-end pe-4">
+                <a href="{{ url_for('pos.view_invoice', invoice_number=s.invoice_number) }}" class="btn btn-sm btn-outline-success">
+                  <i class="bi bi-printer"></i> View / Print
+                </a>
+              </td>
+            </tr>
+            {% endfor %}
+          {% else %}
+            <tr>
+              <td colspan="9" class="text-center py-4 text-muted">No sales recorded yet.</td>
+            </tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

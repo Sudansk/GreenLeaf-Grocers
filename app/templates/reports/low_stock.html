@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block title %}Low-Stock Reorder Report - GreenLeaf Grocers{% endblock %}
+{% block page_title %}Low-Stock & Reorder Report{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h6 class="text-muted mb-0">Official inventory reorder sheet with deficit calculations and primary supplier contacts.</h6>
+  </div>
+  <div class="d-flex gap-2">
+    <a href="{{ url_for('reports.low_stock_csv') }}" class="btn btn-outline-warning text-dark">
+      <i class="bi bi-file-earmark-arrow-down me-1"></i> Export Low Stock CSV
+    </a>
+    <button onclick="window.print()" class="btn btn-outline-secondary">
+      <i class="bi bi-printer me-1"></i> Print Sheet
+    </button>
+  </div>
+</div>
+
+<div class="card shadow-sm">
+  <div class="card-header-clean">
+    <div class="d-flex align-items-center gap-2">
+      <i class="bi bi-exclamation-triangle-fill text-warning fs-5"></i>
+      <h6 class="mb-0 fw-bold">Stock Deficits ({{ records | length }} SKUs)</h6>
+    </div>
+  </div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light text-secondary small text-uppercase">
+          <tr>
+            <th class="ps-4">Product Name</th>
+            <th>SKU</th>
+            <th>Category</th>
+            <th>Current Stock</th>
+            <th>Reorder Level</th>
+            <th>Deficit</th>
+            <th>Unit Cost</th>
+            <th>Est. Restock Cost</th>
+            <th>Supplier</th>
+            <th class="pe-4">Supplier Contact</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% if records %}
+            {% for r in records %}
+            <tr>
+              <td class="ps-4 fw-bold text-dark">{{ r.name }}</td>
+              <td><span class="badge bg-light text-secondary border font-monospace">{{ r.sku }}</span></td>
+              <td><span class="badge bg-light text-dark border">{{ r.category }}</span></td>
+              <td>
+                {% if r.quantity == 0 %}
+                  <span class="badge badge-stock-out">0 (Out)</span>
+                {% else %}
+                  <span class="badge badge-stock-low">{{ r.quantity }}</span>
+                {% endif %}
+              </td>
+              <td>{{ r.reorder_level }}</td>
+              <td><span class="badge bg-danger text-white fw-bold">+{{ r.deficit }}</span></td>
+              <td>${{ "%.2f"|format(r.cost_price) }}</td>
+              <td class="fw-bold text-dark">${{ "%.2f"|format(r.est_reorder_cost) }}</td>
+              <td class="fw-semibold text-secondary">{{ r.supplier_name or 'None' }}</td>
+              <td class="pe-4 small text-muted">
+                {{ r.supplier_phone or '' }}
+                {% if r.supplier_email %}<br><a href="mailto:{{ r.supplier_email }}">{{ r.supplier_email }}</a>{% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          {% else %}
+            <tr>
+              <td colspan="10" class="text-center py-5 text-muted">No products currently below their reorder threshold.</td>
+            </tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}Low Stock Alerts - GreenLeaf Grocers{% endblock %}
+{% block page_title %}Low Stock Alerts & Reorder Dashboard{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h6 class="text-muted mb-0">Products whose available inventory has fallen below their designated reorder threshold.</h6>
+  </div>
+  <a href="{{ url_for('reports.low_stock_csv') }}" class="btn btn-outline-success">
+    <i class="bi bi-file-earmark-arrow-down me-1"></i> Export Low Stock CSV
+  </a>
+</div>
+
+<div class="card shadow-sm">
+  <div class="card-header-clean">
+    <div class="d-flex align-items-center gap-2">
+      <i class="bi bi-exclamation-triangle-fill text-warning fs-5"></i>
+      <h6 class="mb-0 fw-bold">Items Requiring Reorder ({{ items | length }})</h6>
+    </div>
+  </div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light text-secondary small text-uppercase">
+          <tr>
+            <th class="ps-4">Product Name</th>
+            <th>SKU</th>
+            <th>Category</th>
+            <th>Current Stock</th>
+            <th>Reorder Threshold</th>
+            <th>Required Deficit</th>
+            <th>Assigned Supplier</th>
+            <th class="text-end pe-4">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% if items %}
+            {% for item in items %}
+            <tr>
+              <td class="ps-4 fw-bold text-dark">{{ item.name }}</td>
+              <td><span class="badge bg-light text-secondary border font-monospace">{{ item.sku }}</span></td>
+              <td><span class="badge bg-light text-dark border">{{ item.category }}</span></td>
+              <td>
+                {% if item.quantity == 0 %}
+                  <span class="badge badge-stock-out">0 (Out of Stock)</span>
+                {% else %}
+                  <span class="badge badge-stock-low">{{ item.quantity }} {{ item.unit }}</span>
+                {% endif %}
+              </td>
+              <td>{{ item.reorder_level }} {{ item.unit }}</td>
+              <td>
+                <span class="badge bg-danger text-white fw-bold">+{{ item.deficit }} {{ item.unit }}</span>
+              </td>
+              <td>
+                <div class="fw-semibold text-dark">{{ item.supplier_name or 'No Supplier Assigned' }}</div>
+              </td>
+              <td class="text-end pe-4">
+                <a href="{{ url_for('products.detail', product_id=item.id) }}" class="btn btn-sm btn-gl-primary">
+                  <i class="bi bi-arrow-left-right me-1"></i> Restock
+                </a>
+              </td>
+            </tr>
+            {% endfor %}
+          {% else %}
+            <tr>
+              <td colspan="8" class="text-center py-5 text-muted">
+                <i class="bi bi-check2-circle text-success fs-2 d-block mb-2"></i>
+                All inventory levels are currently above reorder thresholds!
+              </td>
+            </tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+
+{% block title %}Invoice {{ sale.invoice_number }} - GreenLeaf Grocers{% endblock %}
+{% block page_title %}Invoice Details{% endblock %}
+
+{% block content %}
+<div class="mb-4 d-flex justify-content-between align-items-center no-print">
+  <a href="{{ url_for('pos.index') }}" class="btn btn-outline-secondary">
+    <i class="bi bi-arrow-left me-1"></i> Back to POS Terminal
+  </a>
+  <div class="d-flex gap-2">
+    <button onclick="window.print()" class="btn btn-gl-primary">
+      <i class="bi bi-printer-fill me-1"></i> Print Invoice
+    </button>
+    <a href="{{ url_for('pos.index') }}" class="btn btn-success">
+      <i class="bi bi-plus-circle me-1"></i> New Transaction
+    </a>
+  </div>
+</div>
+
+<div class="invoice-box shadow-sm mb-5">
+  <!-- Invoice Header -->
+  <div class="d-flex justify-content-between align-items-start pb-4 border-bottom mb-4">
+    <div>
+      <div class="invoice-header-logo mb-1">
+        <i class="bi bi-basket2-fill text-success"></i> GreenLeaf Grocers
+      </div>
+      <div class="text-muted small">
+        452 Organic Market Way, Suite 100<br>
+        Phone: +1 (800) 555-LEAF | Email: support@greenleafgrocers.com<br>
+        GST/Tax ID: GL-884920491
+      </div>
+    </div>
+    <div class="text-end">
+      <h4 class="fw-bold text-dark mb-1">TAX INVOICE</h4>
+      <div class="badge bg-success-subtle text-success fs-6 font-monospace mb-1">{{ sale.invoice_number }}</div>
+      <div class="text-muted small">Date: {{ sale.created_at | dateformat('%b %d, %Y - %I:%M %p') }}</div>
+    </div>
+  </div>
+
+  <!-- Bill To & Cashier Info -->
+  <div class="row mb-4">
+    <div class="col-6">
+      <h6 class="text-uppercase text-secondary fw-bold small">Customer Information</h6>
+      <div class="fw-semibold text-dark">{{ sale.customer_name or 'Walk-in Customer' }}</div>
+      {% if sale.customer_phone %}
+      <div class="text-muted small">Phone: {{ sale.customer_phone }}</div>
+      {% endif %}
+    </div>
+    <div class="col-6 text-end">
+      <h6 class="text-uppercase text-secondary fw-bold small">Transaction Info</h6>
+      <div><strong>Cashier:</strong> {{ sale.cashier_name or sale.cashier_username or 'System' }}</div>
+      <div><strong>Payment Method:</strong> <span class="badge bg-light text-dark border">{{ sale.payment_method }}</span></div>
+    </div>
+  </div>
+
+  <!-- Items Table -->
+  <div class="table-responsive mb-4">
+    <table class="table table-bordered align-middle">
+      <thead class="table-light text-uppercase small text-secondary">
+        <tr>
+          <th style="width: 5%;">#</th>
+          <th>Item Description</th>
+          <th>SKU</th>
+          <th class="text-center" style="width: 12%;">Qty</th>
+          <th class="text-end" style="width: 15%;">Unit Price</th>
+          <th class="text-end" style="width: 18%;">Line Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in items %}
+        <tr>
+          <td>{{ loop.index }}</td>
+          <td>
+            <span class="fw-semibold text-dark">{{ item.product_name }}</span>
+            <small class="text-muted d-block">{{ item.category or 'General' }}</small>
+          </td>
+          <td><span class="font-monospace small text-muted">{{ item.sku or 'N/A' }}</span></td>
+          <td class="text-center fw-bold">{{ item.quantity }} {{ item.unit or '' }}</td>
+          <td class="text-end">${{ "%.2f"|format(item.unit_price) }}</td>
+          <td class="text-end fw-bold">${{ "%.2f"|format(item.line_total) }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Totals Section -->
+  <div class="row justify-content-end mb-4">
+    <div class="col-md-5">
+      <div class="d-flex justify-content-between py-1 border-bottom">
+        <span class="text-muted">Subtotal:</span>
+        <span class="fw-semibold">${{ "%.2f"|format(sale.subtotal) }}</span>
+      </div>
+      {% if sale.discount_amount > 0 %}
+      <div class="d-flex justify-content-between py-1 border-bottom text-danger">
+        <span>Discount ({{ sale.discount_percent }}%):</span>
+        <span class="fw-semibold">-${{ "%.2f"|format(sale.discount_amount) }}</span>
+      </div>
+      {% endif %}
+      <div class="d-flex justify-content-between py-2 border-bottom">
+        <span class="fw-bold fs-5 text-dark">Grand Total:</span>
+        <span class="fw-bold fs-5 text-success">${{ "%.2f"|format(sale.grand_total) }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer Notice -->
+  <div class="text-center pt-4 border-top text-muted small">
+    <p class="mb-1 fw-semibold text-dark">Thank you for shopping at GreenLeaf Grocers!</p>
+    <p class="mb-0">Goods once sold can be exchanged within 7 days with valid receipt. For assistance, contact support@greenleafgrocers.com</p>
+  </div>
+</div>
+{% endblock %}

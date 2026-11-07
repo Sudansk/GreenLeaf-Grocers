@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block title %}Access Denied - GreenLeaf Grocers{% endblock %}
+{% block page_title %}403 - Forbidden{% endblock %}
+
+{% block content %}
+<div class="text-center py-5">
+  <div class="display-1 text-danger fw-bold mb-3"><i class="bi bi-shield-lock"></i> 403</div>
+  <h3 class="fw-bold text-dark">Access Denied</h3>
+  <p class="text-muted mb-4">You do not have the required administrative permissions to access this resource.</p>
+  <a href="{{ url_for('pos.index') }}" class="btn btn-gl-primary">
+    <i class="bi bi-arrow-left me-1"></i> Return to POS Terminal
+  </a>
+</div>
+{% endblock %}

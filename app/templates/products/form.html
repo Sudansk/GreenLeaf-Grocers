@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+
+{% block title %}{{ 'Edit Product' if product else 'Add New Product' }} - GreenLeaf Grocers{% endblock %}
+{% block page_title %}{{ 'Edit Product' if product else 'Add New Product' }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-9">
+    <div class="card shadow-sm">
+      <div class="card-header-clean">
+        <div class="d-flex align-items-center gap-2">
+          <i class="bi {{ 'bi-pencil-square' if product else 'bi-plus-circle' }} text-success fs-5"></i>
+          <h6 class="mb-0 fw-bold">{{ 'Edit Product: ' ~ product.name if product else 'Create New Product' }}</h6>
+        </div>
+        <a href="{{ url_for('products.index') }}" class="btn btn-sm btn-outline-secondary">
+          <i class="bi bi-arrow-left me-1"></i> Back to Products
+        </a>
+      </div>
+
+      <div class="card-body p-4">
+        <form method="POST" action="{{ url_for('products.edit', product_id=product.id) if product else url_for('products.create') }}">
+          <div class="row g-3">
+            <!-- Product Name -->
+            <div class="col-md-8">
+              <label for="name" class="form-label fw-semibold small text-secondary">Product Name <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" id="name" name="name" value="{{ product.name if product else '' }}" required placeholder="e.g. Organic Hass Avocados (Pack of 3)">
+            </div>
+
+            <!-- SKU -->
+            <div class="col-md-4">
+              <label for="sku" class="form-label fw-semibold small text-secondary">SKU / Barcode <span class="text-danger">*</span></label>
+              <input type="text" class="form-control font-monospace text-uppercase" id="sku" name="sku" value="{{ product.sku if product else '' }}" required placeholder="e.g. PROD-AVO-001">
+            </div>
+
+            <!-- Category -->
+            <div class="col-md-4">
+              <label for="category" class="form-label fw-semibold small text-secondary">Category <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" id="category" name="category" list="categoryOptions" value="{{ product.category if product else '' }}" required placeholder="Select or type category">
+              <datalist id="categoryOptions">
+                <option value="Fresh Produce">
+                <option value="Dairy & Eggs">
+                <option value="Bakery">
+                <option value="Beverages">
+                <option value="Pantry">
+                <option value="Snacks">
+                <option value="Household">
+              </datalist>
+            </div>
+
+            <!-- Unit -->
+            <div class="col-md-4">
+              <label for="unit" class="form-label fw-semibold small text-secondary">Unit of Measure</label>
+              <select class="form-select" id="unit" name="unit">
+                {% set units = ['unit', 'kg', 'g', 'pack', 'bottle', 'can', 'carton', 'loaf', 'box', 'case', 'dozen', 'tub'] %}
+                {% for u in units %}
+                <option value="{{ u }}" {% if product and product.unit == u %}selected{% endif %}>{{ u }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <!-- Supplier -->
+            <div class="col-md-4">
+              <label for="supplier_id" class="form-label fw-semibold small text-secondary">Supplier</label>
+              <select class="form-select" id="supplier_id" name="supplier_id">
+                <option value="">-- No Supplier Assigned --</option>
+                {% for sup in suppliers %}
+                <option value="{{ sup.id }}" {% if product and product.supplier_id == sup.id %}selected{% endif %}>{{ sup.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <!-- Cost Price -->
+            <div class="col-md-3">
+              <label for="cost_price" class="form-label fw-semibold small text-secondary">Cost Price ($)</label>
+              <div class="input-group">
+                <span class="input-group-text">$</span>
+                <input type="number" step="0.01" min="0" class="form-control" id="cost_price" name="cost_price" value="{{ product.cost_price if product else '0.00' }}" required>
+              </div>
+            </div>
+
+            <!-- Selling Price -->
+            <div class="col-md-3">
+              <label for="selling_price" class="form-label fw-semibold small text-secondary">Selling Price ($) <span class="text-danger">*</span></label>
+              <div class="input-group">
+                <span class="input-group-text text-success fw-bold">$</span>
+                <input type="number" step="0.01" min="0" class="form-control fw-bold text-success" id="selling_price" name="selling_price" value="{{ product.selling_price if product else '0.00' }}" required>
+              </div>
+            </div>
+
+            <!-- Initial Quantity (only enabled on create) -->
+            <div class="col-md-3">
+              <label for="quantity" class="form-label fw-semibold small text-secondary">
+                {{ 'Initial Stock Qty' if not product else 'Current Stock Qty' }}
+              </label>
+              {% if product %}
+                <input type="text" class="form-control bg-light" value="{{ product.quantity }} {{ product.unit }}" readonly title="Use Inventory Adjustment to alter existing stock levels">
+                <small class="text-muted" style="font-size: 0.72rem;">Adjust via Inventory page for audit trail</small>
+              {% else %}
+                <input type="number" min="0" class="form-control" id="quantity" name="quantity" value="0" required>
+              {% endif %}
+            </div>
+
+            <!-- Reorder Level -->
+            <div class="col-md-3">
+              <label for="reorder_level" class="form-label fw-semibold small text-secondary">Reorder Level Alert</label>
+              <input type="number" min="0" class="form-control" id="reorder_level" name="reorder_level" value="{{ product.reorder_level if product else '10' }}" required>
+            </div>
+
+            <!-- Expiry Date -->
+            <div class="col-md-6">
+              <label for="expiry_date" class="form-label fw-semibold small text-secondary">Batch Expiry Date <span class="text-danger">*</span></label>
+              <input type="date" class="form-control" id="expiry_date" name="expiry_date" value="{{ product.expiry_date if product else '' }}" required>
+            </div>
+
+            <div class="col-12 mt-4 pt-3 border-top d-flex justify-content-end gap-2">
+              <a href="{{ url_for('products.index') }}" class="btn btn-outline-secondary">Cancel</a>
+              <button type="submit" class="btn btn-gl-primary px-4 fw-semibold">
+                <i class="bi bi-check2-circle me-1"></i> {{ 'Save Changes' if product else 'Add Product' }}
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

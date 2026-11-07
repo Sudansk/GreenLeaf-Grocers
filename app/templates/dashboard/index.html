@@ -1,0 +1,271 @@
+{% extends "base.html" %}
+
+{% block title %}Executive Analytics Dashboard - GreenLeaf Grocers{% endblock %}
+{% block page_title %}Executive Analytics Dashboard{% endblock %}
+
+{% block content %}
+<div class="row g-3 mb-4 dashboard-kpis">
+  <!-- KPI: Total Revenue -->
+  <div class="col-sm-6 col-xl-2">
+    <div class="kpi-card shadow-sm h-100">
+      <div class="kpi-icon-box kpi-emerald">
+        <i class="bi bi-currency-dollar"></i>
+      </div>
+      <div class="kpi-content">
+        <div class="kpi-label">Total Revenue</div>
+        <div class="kpi-val text-success" id="kpiTotalRevenue">{{ metrics.total_revenue | currency }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- KPI: Total Sales / Bills -->
+  <div class="col-sm-6 col-xl-2">
+    <div class="kpi-card shadow-sm h-100">
+      <div class="kpi-icon-box kpi-blue">
+        <i class="bi bi-receipt-cutoff"></i>
+      </div>
+      <div class="kpi-content">
+        <div class="kpi-label">Total Sales</div>
+        <div class="kpi-val">{{ metrics.total_sales_count }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- KPI: Average Bill Value -->
+  <div class="col-sm-6 col-xl-2">
+    <div class="kpi-card shadow-sm h-100">
+      <div class="kpi-icon-box kpi-amber">
+        <i class="bi bi-calculator"></i>
+      </div>
+      <div class="kpi-content">
+        <div class="kpi-label">Avg Bill Value</div>
+        <div class="kpi-val">{{ metrics.avg_bill_value | currency }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- KPI: Total Active Products -->
+  <div class="col-sm-6 col-xl-2">
+    <div class="kpi-card shadow-sm h-100">
+      <div class="kpi-icon-box kpi-purple">
+        <i class="bi bi-boxes"></i>
+      </div>
+      <div class="kpi-content">
+        <div class="kpi-label">Total Products</div>
+        <div class="kpi-val">{{ metrics.total_products }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- KPI: Low Stock Products -->
+  <div class="col-sm-6 col-xl-2">
+    <div class="kpi-card shadow-sm h-100">
+      <div class="kpi-icon-box kpi-rose">
+        <i class="bi bi-exclamation-triangle"></i>
+      </div>
+      <div class="kpi-content">
+        <div class="kpi-label">Low Stock</div>
+        <div class="kpi-val text-danger">{{ metrics.low_stock_count }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- KPI: Stock Turnover Ratio -->
+  <div class="col-sm-6 col-xl-2">
+    <div class="kpi-card shadow-sm h-100">
+      <div class="kpi-icon-box kpi-emerald">
+        <i class="bi bi-arrow-repeat"></i>
+      </div>
+      <div class="kpi-content">
+        <div class="kpi-label" title="Cost of Goods Sold / Inventory Cost">Stock Turnover</div>
+        <div class="kpi-val">{{ metrics.stock_turnover }}x</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Charts Row 1: Daily Revenue & Top Products -->
+<div class="row g-4 mb-4">
+  <div class="col-lg-7">
+    <div class="card shadow-sm h-100">
+      <div class="card-header-clean">
+        <div class="d-flex align-items-center gap-2">
+          <i class="bi bi-graph-up text-success fs-5"></i>
+          <h6 class="mb-0 fw-bold">Daily Revenue Performance</h6>
+        </div>
+        <span class="badge bg-light text-secondary border">Pandas & Plotly</span>
+      </div>
+      <div class="card-body p-2">
+        <div id="dailyRevenueChart" style="min-height: 430px; height: 430px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-5">
+    <div class="card shadow-sm h-100">
+      <div class="card-header-clean">
+        <div class="d-flex align-items-center gap-2">
+          <i class="bi bi-bar-chart-fill text-success fs-5"></i>
+          <h6 class="mb-0 fw-bold">Top 10 Selling Products</h6>
+        </div>
+        <span class="badge bg-light text-secondary border">By Units Sold</span>
+      </div>
+      <div class="card-body p-2">
+        <div id="topProductsChart" style="min-height: 430px; height: 430px;"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Charts Row 2: Category Breakdown & Payment Methods -->
+<div class="row g-4 mb-4">
+  <div class="col-lg-6">
+    <div class="card shadow-sm h-100">
+      <div class="card-header-clean">
+        <div class="d-flex align-items-center gap-2">
+          <i class="bi bi-pie-chart-fill text-success fs-5"></i>
+          <h6 class="mb-0 fw-bold">Category-Wise Sales Share</h6>
+        </div>
+        <span class="badge bg-light text-secondary border">Revenue Breakdown</span>
+      </div>
+      <div class="card-body p-2">
+        <div id="categoryShareChart" style="min-height: 390px; height: 390px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-6">
+    <div class="card shadow-sm h-100">
+      <div class="card-header-clean">
+        <div class="d-flex align-items-center gap-2">
+          <i class="bi bi-credit-card-2-front-fill text-primary fs-5"></i>
+          <h6 class="mb-0 fw-bold">Revenue by Payment Method</h6>
+        </div>
+        <span class="badge bg-light text-secondary border">Cash / Card / UPI</span>
+      </div>
+      <div class="card-body p-2">
+        <div id="paymentMethodsChart" style="min-height: 390px; height: 390px;"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Slow-Moving Products Section (Pandas Analysis Requirement) -->
+<div class="card shadow-sm mb-4">
+  <div class="card-header-clean">
+    <div class="d-flex align-items-center gap-2">
+      <i class="bi bi-hourglass-split text-warning fs-5"></i>
+      <div>
+        <h6 class="mb-0 fw-bold">Slow-Moving Products (Last 30 Days)</h6>
+        <small class="text-muted">Products with 2 or fewer sales units in the past 30 days requiring promotion or clearance.</small>
+      </div>
+    </div>
+    <a href="{{ url_for('reports.product_performance') }}" class="btn btn-sm btn-gl-outline">
+      <i class="bi bi-file-earmark-text me-1"></i> Full Performance Report
+    </a>
+  </div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light text-secondary small text-uppercase">
+          <tr>
+            <th class="ps-4">Product Name</th>
+            <th>SKU</th>
+            <th>Category</th>
+            <th>In Stock</th>
+            <th>Retail Price</th>
+            <th>Sold (30d)</th>
+            <th>Tied Capital</th>
+            <th class="text-end pe-4">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% if slow_moving_items %}
+            {% for item in slow_moving_items %}
+            <tr>
+              <td class="ps-4 fw-semibold text-dark">{{ item.name }}</td>
+              <td><span class="badge bg-light text-secondary border font-monospace">{{ item.sku }}</span></td>
+              <td><span class="badge bg-light text-dark border">{{ item.category }}</span></td>
+              <td>
+                <span class="badge {{ 'bg-success-subtle text-success' if item.quantity > 5 else 'bg-warning-subtle text-warning' }} fw-bold">
+                  {{ item.quantity }} units
+                </span>
+              </td>
+              <td>${{ "%.2f"|format(item.selling_price) }}</td>
+              <td>
+                <span class="badge bg-danger-subtle text-danger fw-bold">
+                  {{ item.sold_in_period }} sold
+                </span>
+              </td>
+              <td class="fw-semibold text-secondary">${{ "%.2f"|format(item.inventory_value) }}</td>
+              <td class="text-end pe-4">
+                <a href="{{ url_for('products.edit', product_id=item.id) }}" class="btn btn-sm btn-outline-secondary">
+                  <i class="bi bi-pencil-square"></i> Edit
+                </a>
+              </td>
+            </tr>
+            {% endfor %}
+          {% else %}
+            <tr>
+              <td colspan="8" class="text-center py-4 text-muted">
+                <i class="bi bi-check-circle-fill text-success me-1"></i> Excellent! No slow-moving stock detected in the last 30 days.
+              </td>
+            </tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Dynamic font size adjustment for KPI values to ensure perfect fit inside each card
+  function adjustKpiFontSizes() {
+    document.querySelectorAll('.kpi-card').forEach(function(card) {
+      const valEl = card.querySelector('.kpi-val');
+      const contentEl = card.querySelector('.kpi-content');
+      if (!valEl || !contentEl) return;
+
+      valEl.style.fontSize = ''; // Reset to CSS default to calculate starting size
+      const computed = window.getComputedStyle(valEl);
+      let currentSize = parseFloat(computed.fontSize);
+      const minSize = 12; // Minimum readable font size in px
+
+      // Progressively reduce font size if text width exceeds container width
+      while (valEl.scrollWidth > contentEl.clientWidth && currentSize > minSize) {
+        currentSize -= 0.5;
+        valEl.style.fontSize = currentSize + 'px';
+      }
+    });
+  }
+
+  // Adjust on load and window resize
+  window.addEventListener('resize', adjustKpiFontSizes);
+  document.addEventListener('DOMContentLoaded', adjustKpiFontSizes);
+  // Also invoke immediately in case DOM is already ready
+  setTimeout(adjustKpiFontSizes, 50);
+
+  // Render Plotly charts from server JSON
+  const revenueChartData = {{ revenue_chart | tojson | safe }};
+  const topProductsChartData = {{ top_products_chart | tojson | safe }};
+  const categoryChartData = {{ category_chart | tojson | safe }};
+  const paymentChartData = {{ payment_chart | tojson | safe }};
+
+  const chartConfig = { responsive: true, displayModeBar: false };
+
+  Plotly.newPlot('dailyRevenueChart', revenueChartData.data, revenueChartData.layout, chartConfig);
+  Plotly.newPlot('topProductsChart', topProductsChartData.data, topProductsChartData.layout, chartConfig);
+  Plotly.newPlot('categoryShareChart', categoryChartData.data, categoryChartData.layout, chartConfig);
+  Plotly.newPlot('paymentMethodsChart', paymentChartData.data, paymentChartData.layout, chartConfig);
+
+  // Resize charts properly on window resize
+  window.addEventListener('resize', function() {
+    Plotly.Plots.resize('dailyRevenueChart');
+    Plotly.Plots.resize('topProductsChart');
+    Plotly.Plots.resize('categoryShareChart');
+    Plotly.Plots.resize('paymentMethodsChart');
+  });
+</script>
+{% endblock %}
